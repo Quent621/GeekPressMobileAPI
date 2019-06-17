@@ -1,2 +1,2 @@
 # GeekPressMobileAPI
-Android mobile application with REST API
+Android mobile application for watch with REST API
