@@ -1,27 +1,115 @@
 package com.example.geekpressmobileapi;
 
 import android.os.Bundle;
-import android.support.wearable.activity.WearableActivity;
-import android.text.Html;
-import android.widget.TextView;
+import android.util.Log;
 
-public class DAOArticle extends MainActivity {
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+public class DAOArticle {
+
+    public DAOArticle(){
+
+    }
+
+    private String readJSONFeed(String url) {
+        String jsonArticle = new String();
+        try {
+            URL urlObj = new URL(url);
+            HttpURLConnection urlConnection = (HttpURLConnection) urlObj.openConnection();
+            BufferedReader in = new BufferedReader(new
+                    InputStreamReader(urlConnection.getInputStream())
+            );
+            int statusCode = urlConnection.getResponseCode();
+            if (statusCode == 200) {
+                String line;
+                while ((line = in.readLine()) != null) {
+                    jsonArticle+=line;
+                }
+            } else {
+                Log.d("JSON", "Failed to download file"+statusCode);
+            }
+
+            in.close();
+            urlConnection.disconnect();
+
+            return jsonArticle;
+
+        }
+        catch(MalformedURLException e){
+            Log.d("URL",e.getStackTrace().toString());
+        }
+        catch (Exception e) {
+            Log.d("JSON",e.toString());
+        }
+        return jsonArticle;
+    }
 
 
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        TextView titreTextView = (TextView) findViewById(R.id.title);
-        TextView contenuTextView = (TextView) findViewById(R.id.article);
-        TextView auteurTextView = (TextView) findViewById(R.id.author);
+    public List<ObjectTest> getListArticle(){
+        String str = readJSONFeed("https://chucknorrisfacts.fr/api/get?data");
+        ArrayList<ObjectTest> list = new ArrayList<>();
 
-        DAOArticle daoArticle = new DAOArticle();
-        Article art = daoArticle.getListArticle().get(0);
-        titreTextView.setText(Html.fromHtml(art.getTitre()));
-        contenuTextView.setText(Html.fromHtml(art.getContenu()));
-        auteurTextView.setText(art.getAuteur());
-        // Enables Always-on
-        setAmbientEnabled();
+        try {
+            JSONArray jsonArray = new JSONArray(str);
+            Log.i("JSON", "Number of :" + str);
+
+            for(int i = 0; i < jsonArray.length(); i++){
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                ObjectTest objectTest = new ObjectTest();
+                objectTest.setTitre(jsonObject.getString("id"));
+                objectTest.setAuteur(jsonObject.getString("fact"));
+                objectTest.setArticle(jsonObject.getString("points"));
+
+                list.add(objectTest);
+            }
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        return list;
+
+    }
+
+    public class ObjectTest {
+
+        public String titre;
+        public String auteur;
+        public String article;
+
+        public String getTitre(){
+            return titre;
+        }
+
+        public void setTitre(String titre){
+            this.titre = titre;
+        }
+
+        public String getAuteur(){
+            return auteur;
+        }
+
+        public void setAuteur(String auteur){
+            this.auteur = auteur;
+        }
+
+
+        public String getArticle(){
+            return article;
+        }
+
+        public void setArticle(String article){
+            this.article = article;
+        }
     }
 
 

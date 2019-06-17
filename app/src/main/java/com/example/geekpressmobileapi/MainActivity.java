@@ -3,14 +3,11 @@ package com.example.geekpressmobileapi;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.wearable.activity.WearableActivity;
-import android.util.Log;
+import android.text.Html;
+
 import android.widget.TextView;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+
 
 public class MainActivity extends WearableActivity {
 
@@ -25,43 +22,20 @@ public class MainActivity extends WearableActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mTextView = (TextView) findViewById(R.id.title);
+        TextView titre = (TextView) findViewById(R.id.title);
+        TextView auteur = (TextView) findViewById(R.id.author);
+        TextView article = (TextView) findViewById(R.id.article);
 
-        // Enables Always-on
+        DAOArticle daoArticle = new DAOArticle();
+        DAOArticle.ObjectTest art = daoArticle.getListArticle().get(1);
+        titre.setText(Html.fromHtml(art.getTitre()));
+        auteur.setText(Html.fromHtml(art.getAuteur()));
+        article.setText(art.getArticle());
+        //Enables Always-on
         setAmbientEnabled();
     }
 
 
 
-
-    private String readJSONFeed(String url) {
-        String jsonArticle = new String();
-        try {
-            URL urlObj = new URL(url);
-            HttpURLConnection urlConnection = (HttpURLConnection) urlObj.openConnection();
-            BufferedReader in = new BufferedReader(new
-                    InputStreamReader(urlConnection.getInputStream())
-            );
-            int statusCode = urlConnection.getResponseCode();
-            if (statusCode == 200) {
-                String line;
-                while ((line = in.readLine()) != null) {
-                    jsonArticle+=line;
-                }
-            } else {
-                Log.d("JSON", "Failed to download file"+statusCode);
-            }
-            in.close();
-            urlConnection.disconnect();
-            return jsonArticle;
-        }
-        catch(MalformedURLException e){
-            Log.d("URL",e.getStackTrace().toString());
-        }
-        catch (Exception e) {
-            Log.d("JSON",e.toString());
-        }
-        return jsonArticle;
-    }
-
 }
+
